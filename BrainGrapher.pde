@@ -12,6 +12,7 @@ Serial serial;
 
 Channel[] channels = new Channel[11];
 Graph graph;
+Circle circle;
 int disp_x, disp_y;
 
 int packetCount = 0;
@@ -27,15 +28,10 @@ void setup() {
   frameRate(60);
   smooth();
   noFill();
-  // Comment in for Mac
-  for (int i = 0; i < Serial.list().length; i++) {
-    println("[" + i + "] " + Serial.list()[i]);
-  }
-  serial = new Serial(this, Serial.list()[5], 9600);
 
-  serial.bufferUntil(10);
-  // Comment in for Windows
-  //serial = new Serial(this, "COM6", 9600);    
+  serial = new Serial(this, "COM6", 9600);    
+  //serial.bufferUntil(10);
+
 
   // Create the channel objects
   channels[0] = new Channel("Signal Quality", color(0), "");
@@ -65,6 +61,7 @@ void setup() {
 
   // Set up the graph
   graph = new Graph(disp_x/2, disp_y/2, disp_x/4, disp_x/4, 0,0,0);
+  circle = new Circle();
 
   //// Set yup the connection light
   //connectionLight = new ConnectionLight(width - 140, 10, 20);
@@ -83,15 +80,9 @@ void draw() {
   background(255);
 
   // Update and draw the main graph
-  
   //graph.update();
-  if (channels[0].getLatestPoint().value != 200){
-    graph.draw();
-  }
-  else{
-    
-  }
-  
+  //graph.draw();
+  circle.draw();
 
 }
 
@@ -125,7 +116,7 @@ void serialEvent(Serial p) {
               //if ((Integer.parseInt(incomingValues[0]) == 200) && (i > 2)) {
               //  newValue = 0;
               //}
-              println(" processing: " + newValue);
+              //println(" processing: " + newValue);
 
  
               channels[i].addDataPoint(newValue);
