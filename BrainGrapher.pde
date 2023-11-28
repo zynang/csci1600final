@@ -13,6 +13,7 @@ Serial serial;
 Channel[] channels = new Channel[11];
 Graph graph;
 Circle circle;
+Rect rect;
 int disp_x, disp_y;
 
 int packetCount = 0;
@@ -62,6 +63,7 @@ void setup() {
   // Set up the graph
   graph = new Graph(disp_x/2, disp_y/2, disp_x/4, disp_x/4, 0,0,0);
   circle = new Circle();
+  rect = new Rect();
 
   //// Set yup the connection light
   //connectionLight = new ConnectionLight(width - 140, 10, 20);
@@ -82,7 +84,8 @@ void draw() {
   // Update and draw the main graph
   //graph.update();
   //graph.draw();
-  circle.draw();
+  //circle.draw();
+  rect.draw();
 
 }
 
