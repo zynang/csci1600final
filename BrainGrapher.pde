@@ -27,10 +27,15 @@ void setup() {
   frameRate(60);
   smooth();
   noFill();
+  // Comment in for Mac
+  for (int i = 0; i < Serial.list().length; i++) {
+    println("[" + i + "] " + Serial.list()[i]);
+  }
+  serial = new Serial(this, Serial.list()[5], 9600);
 
-  serial = new Serial(this, "COM6", 9600);    
-  //serial.bufferUntil(10);
-
+  serial.bufferUntil(10);
+  // Comment in for Windows
+  //serial = new Serial(this, "COM6", 9600);    
 
   // Create the channel objects
   channels[0] = new Channel("Signal Quality", color(0), "");
@@ -78,8 +83,15 @@ void draw() {
   background(255);
 
   // Update and draw the main graph
+  
   //graph.update();
-  graph.draw();
+  if (channels[0].getLatestPoint().value != 200){
+    graph.draw();
+  }
+  else{
+    
+  }
+  
 
 }
 
