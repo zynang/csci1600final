@@ -29,9 +29,18 @@ void setup() {
   frameRate(60);
   smooth();
   noFill();
-
-  serial = new Serial(this, "COM6", 9600);    
+  
+  // Comment in for Zyn
+  //serial = new Serial(this, "COM6", 9600);    
   //serial.bufferUntil(10);
+  
+  // Comment in for Joe
+  for (int i = 0; i < Serial.list().length; i++) {
+    println("[" + i + "] " + Serial.list()[i]);
+  }
+  serial = new Serial(this, Serial.list()[5], 9600);
+
+  serial.bufferUntil(10);
 
 
   // Create the channel objects
@@ -58,11 +67,9 @@ void setup() {
   channels[1].allowGlobal = false;
   channels[2].allowGlobal = false;
 
- 
-
   // Set up the graph
-  graph = new Graph(disp_x/2, disp_y/2, disp_x/4, disp_x/4, 0,0,0);
-  circle = new Circle();
+  //graph = new Graph(disp_x/2, disp_y/2, disp_x/4, disp_x/4, 0,0,0);
+  //circle = new Circle();
   rect = new Rect();
 
   //// Set yup the connection light

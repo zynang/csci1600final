@@ -14,54 +14,57 @@ class Rect {
     int gW = 0;
     int bW = 0;
     
-    
+    float rAlpha = 0;
+    float gAlpha = 0;
+    float bAlpha = 0;
     for (int i : new int[]{1, 2, 3}) {
       Channel thisChannel = channels[i];
       Point thisPoint = (Point) thisChannel.getLatestPoint();
 
       if (i == 1) {
-        //r = map(thisPoint.value, 0, 100, 0, 255); // Attention
-         r = map(thisPoint.value, 0, 100, 0, 1); // Attention
-
-        //c1 = color(r, 0, 0);
-        //c1 = color(255, 0, 0, r);
-        c1 = color(255, 0, 0, 1);
+        //int currRead = thisPoint.value;
+        //rW = int(map(thisPoint.value, 0,100,0,255));
+        //rW = int(random(0,255));
+        r = map(thisPoint.value, 0, 100, 0, 255); // Attention
+        //r = map(thisPoint.value, 0, 100, 0, 1); // Attention
+        c1 = color(255, 105, 180, r);
+        //c1 = color(255, 0, 0, 255);
 
       } else if (i == 2) {
-        //g = map(thisPoint.value, 0, 100, 0, 255); // Meditation
-        g = map(thisPoint.value, 0, 100, 0, 1); // Meditation
+        g = map(thisPoint.value, 0, 100, 0, 255); // Meditation
+        //gW = int(map(thisPoint.value,0,100,0,255));
+        //gW = int(random(0,255));
+        //g = map(thisPoint.value, 0, 100, 0, 1); // Meditation
 
-        //c2 = color(255, g, 0);
-        //c2 = color(255, 255, 0, g);
-        c2 = color(255, 255, 0, 1);
+        c2 = color(255, 255, 0, g);
+        //c2 = color(255, 255, 0, 255);
 
       } else if (i == 3) {
-        //b = map(thisPoint.value, 100000, 3000000, 0, 255); // Dreamless Sleep
-        b = map(thisPoint.value, 100000, 3000000, 0, 1); // Dreamless Sleep
-        //c3 = color(0, 0, 255, b);
-        c3 = color(0, 0, 255, 1);
-
-
-        
-        //c3 = color(150, 150, b);
+        b = map(thisPoint.value, 100000, 3000000, 0, 255); // Dreamless Sleep
+        //bW = int(map(thisPoint.value,0,100,0,255));
+        //bW = int(random(0,255));
+        //b = map(thisPoint.value, 100000, 3000000, 0, 1); // Dreamless Sleep
+        c3 = color(0, 191, 255, b);
+        //c3 = color(0, 0, 255, 255);
       } else {
         print("error reading from channel");
       }
     }
     
-    //int total = (int) (r*255 + g*255 + b*255);
-    int total = (int) (0.5*255 + 0.5*255 + 0.5*255);
+    int total = (int) (r + g + b);
+    //int total = (int) (255 + 0.5*255 + 0.5*255x);
           //println("total: " + r + g + b);
 
-    if (r*255 != 0 && g*255 != 0 && b*255 !=0 ){
-      rW = (int)((r*255 / total) * (width - 600));
-      println("test");
+    if (r != 0 && g != 0 && b !=0 ){
+      //println(rW);
+      rW = (int)((r / total) * (width - 600));
+      //println(rW);
       //println("red: " + (r / total) );
 
-      gW = (int)((g*255 / total) * (width - 600));    
+      gW = (int)((g / total) * (width - 600));    
       //println("green: " + (g / total) );
 
-     bW = (int)((b*255 / total) * (width - 600));
+      bW = (int)((b / total) * (width - 600));
            //println("blue: " + (b / total) );
     }
    

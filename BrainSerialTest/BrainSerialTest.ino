@@ -10,7 +10,7 @@
 Brain brain(Serial1);
 String m = "none";
 const int buttonPin = 4;
-
+int timeSinceLastUpdate = 0;
 void setup() {
   // Enable internal pull-up resistor for buttonPin
   pinMode(buttonPin, INPUT_PULLUP);
@@ -28,10 +28,22 @@ void loop() {
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
   if (brain.update()) {
-      // Serial.println(brain.readErrors());
-      Serial.println(brain.readCSV());
-      pinMode(buttonPin, INPUT); // Set the button pin as INPUT
+    // Serial.println(brain.readErrors());
+    timeSinceLastUpdate = millis();
+    Serial.println(brain.readCSV());
+    pinMode(buttonPin, INPUT); // Set the button pin as INPUT
+    // delay(100);
   }
+  if (millis() - timeSinceLastUpdate > 5000){
+    // Serial.println(timeSinceLastUpdate);
+    Serial.println("err1");
+  }
+  // else{
+    
+  //   delay(100);
+  // }
+  // delay(100);
+   // TODO: but this error will be if headset is not even turned on
   // Serial.println(digitalRead(buttonPin));
   // Serial.println(m);
 
