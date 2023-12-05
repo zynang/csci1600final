@@ -14,59 +14,45 @@ class Rect {
     int gW = 0;
     int bW = 0;
     
-    
     for (int i : new int[]{1, 2, 3}) {
       Channel thisChannel = channels[i];
       Point thisPoint = (Point) thisChannel.getLatestPoint();
 
       if (i == 1) {
-        //r = map(thisPoint.value, 0, 100, 0, 255); // Attention
-         r = map(thisPoint.value, 0, 100, 0, 1); // Attention
-
-        //c1 = color(r, 0, 0);
-        //c1 = color(255, 0, 0, r);
-        c1 = color(255, 0, 0, 1);
+        r = map(thisPoint.value, 0, 100, 0, 255); // Attention
+        c1 = color(255, 105, 180, r);
 
       } else if (i == 2) {
-        //g = map(thisPoint.value, 0, 100, 0, 255); // Meditation
-        g = map(thisPoint.value, 0, 100, 0, 1); // Meditation
-
-        //c2 = color(255, g, 0);
-        //c2 = color(255, 255, 0, g);
-        c2 = color(255, 255, 0, 1);
+        g = map(thisPoint.value, 0, 100, 0, 255); // Meditation
+        c2 = color(255, 255, 0, g);
 
       } else if (i == 3) {
-        //b = map(thisPoint.value, 100000, 3000000, 0, 255); // Dreamless Sleep
-        b = map(thisPoint.value, 100000, 3000000, 0, 1); // Dreamless Sleep
-        //c3 = color(0, 0, 255, b);
-        c3 = color(0, 0, 255, 1);
-
-
-        
-        //c3 = color(150, 150, b);
+        b = map(thisPoint.value, 100000, 3000000, 0, 255); // Dreamless Sleep
+        c3 = color(0, 191, 255, b);
+        //c3 = color(0, 0, 255, 255);
       } else {
         print("error reading from channel");
       }
     }
     
-    //int total = (int) (r*255 + g*255 + b*255);
-    int total = (int) (0.5*255 + 0.5*255 + 0.5*255);
+    int total = (int) (r + g + b);
+    //int total = (int) (255 + 0.5*255 + 0.5*255x);
           //println("total: " + r + g + b);
 
-    if (r*255 != 0 && g*255 != 0 && b*255 !=0 ){
-      rW = (int)((r*255 / total) * (width - 600));
-      println("test");
+    if (r != 0 && g != 0 && b !=0 ){
+      //println(rW);
+      rW = (int)((r / total) * (width - 600));
+      //println(rW);
       //println("red: " + (r / total) );
 
-      gW = (int)((g*255 / total) * (width - 600));    
+      gW = (int)((g / total) * (width - 600));    
       //println("green: " + (g / total) );
 
-     bW = (int)((b*255 / total) * (width - 600));
+      bW = (int)((b / total) * (width - 600));
            //println("blue: " + (b / total) );
     }
    
     fillGradient(100, height/4, height/2, rW, gW, bW, c1, c2,c3);
-
   }
 
 
@@ -79,7 +65,7 @@ class Rect {
     }
     
     // gradient for 10 spaces
-    for (int j = x+rW; j <= x+rW + 200; j++){
+    for (int j = x+rW+1; j <= x+rW + 200; j++){
      float inter = map(j, x+rW,  x+rW + 200, 0, 1);
      color c = lerpColor(r, g, inter);
      stroke(c);
@@ -87,27 +73,25 @@ class Rect {
     }
     
     // green region
-    for (int i = x+rW + 200; i <= x+rW + 200 + gW; i++){
+    for (int k = x+rW + 201; k <= x+rW + 200 + gW; k++){
       stroke(g);
-      line(i, y, i, y+h);
+      line(k, y, k, y+h);
     }
     
       
     // gradient for 10 spaces
-    for (int j = x+rW + 200 + gW; j <= x+rW + 200 + gW + 200; j++){
-     float inter = map(j, x+rW + 200 + gW,  x+rW + 200 + gW+ 200, 0, 1);
+    for (int l = x+rW + 200 + gW +1; l <= x+rW + 200 + gW + 200; l++){
+     float inter = map(l, x+rW + 200 + gW,  x+rW + 200 + gW+ 200, 0, 1);
      color c = lerpColor(g, b, inter);
      stroke(c);
-     line(j, y, j, y+h);
+     line(l, y, l, y+h);
     }
     
      // blue region
-    for (int i = x+rW + 200 + gW + 200; i <= x+rW + 200 + gW + 200 +bW; i++){
+    for (int m = x+rW + 200 + gW + 200 + 1; m <= x+rW + 200 + gW + 200 +bW; m++){
       stroke(b);
-      line(i, y, i, y+h);
+      line(m, y, m, y+h);
     }
-    
-   
     
     
   }
