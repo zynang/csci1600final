@@ -40,9 +40,9 @@ void setup() {
   //serial.bufferUntil(10);
   
   // Comment in for Joe
-  //for (int i = 0; i < Serial.list().length; i++) {
-  //  println("[" + i + "] " + Serial.list()[i]);
-  //}
+  for (int i = 0; i < Serial.list().length; i++) {
+    println("[" + i + "] " + Serial.list()[i]);
+  }
   serial = new Serial(this, Serial.list()[5], 9600);
   serial.bufferUntil(10);
   // Set up the graph
@@ -72,31 +72,32 @@ void draw() {
       String err_msg2 = "But no connection detected!";
       String err_msg3 = ":-(";
   
+      estimateColor();
       //println(red(nextColor));
-      if (currR > red(nextColor)){
-        currR-=1;
-      }
-      else if (currR < red(nextColor)){
-        currR+=1;
-      }
-      if (currG > green(nextColor)){
-        currG-=1;
-      }
-      else if (currG < green(nextColor)){
-        currG+=1;
-      }
-      if (currB > blue(nextColor)){
-        currB-=1;
-      }
-      else if (currB < blue(nextColor)){
-        currB+=1;
-      }
-      fill(currR,currG,currB);
+      //if (currR > red(nextColor)){
+      //  currR-=1;
+      //}
+      //else if (currR < red(nextColor)){
+      //  currR+=1;
+      //}
+      //if (currG > green(nextColor)){
+      //  currG-=1;
+      //}
+      //else if (currG < green(nextColor)){
+      //  currG+=1;
+      //}
+      //if (currB > blue(nextColor)){
+      //  currB-=1;
+      //}
+      //else if (currB < blue(nextColor)){
+      //  currB+=1;
+      //}
+      //fill(currR,currG,currB);
       //println(currR, currG, currB);
       //println(red(nextColor) + "; " + green(nextColor) + "; " + blue(nextColor));
-      if (currR == red(nextColor) && currG == green(nextColor) && currB == blue(nextColor)){
-        nextColorReached = true;
-      }
+      //if (currR == red(nextColor) && currG == green(nextColor) && currB == blue(nextColor)){
+      //  nextColorReached = true;
+      //}
       //fill(lerpedColor); // Text color
       textSize(70);
       text(err_msg1, 225, 400);
@@ -104,16 +105,21 @@ void draw() {
       text(err_msg3, 325, 600);
     }
     else{
-      println("drawing rect");
       rect.draw();
     }
     
   }
   else{
       //size(400, 400);
-      fill(0);
-      textSize(64);
-      text("establish an arduino connection", 40, 300); 
+      estimateColor();
+      textSize(70);
+      text("Establish an Arduino connection!!!", 275, 400);
+      text("<(•-•<)", 650, 600);
+      
+      //text(err_msg2, 275, 500);
+      //text(err_msg3, 325, 600);
+      //textSize(64);
+      //text("establish an arduino connection", 40, 300); 
   }
 }
 
@@ -189,6 +195,32 @@ void serialEvent(Serial p) {
 
 // Utilities
 
+void estimateColor(){
+  if (currR > red(nextColor)){
+      currR-=1;
+    }
+    else if (currR < red(nextColor)){
+      currR+=1;
+    }
+    if (currG > green(nextColor)){
+      currG-=1;
+    }
+    else if (currG < green(nextColor)){
+      currG+=1;
+    }
+    if (currB > blue(nextColor)){
+      currB-=1;
+    }
+    else if (currB < blue(nextColor)){
+      currB+=1;
+    }
+    fill(currR,currG,currB);
+    //println(currR, currG, currB);
+    //println(red(nextColor) + "; " + green(nextColor) + "; " + blue(nextColor));
+    if (currR == red(nextColor) && currG == green(nextColor) && currB == blue(nextColor)){
+      nextColorReached = true;
+    }
+}
 // Extend Processing's built-in map() function to support the Long datatype
 long mapLong(long x, long in_min, long in_max, long out_min, long out_max) { 
   return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
