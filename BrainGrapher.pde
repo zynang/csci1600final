@@ -30,12 +30,9 @@ int currG;
 int currB;
 boolean nextColorReached = false;
 void setup() {
+  // Set up window
   size(1440,960);
   //size(disp_x, disp_y);
-  frameRate(60);
-  pickRandomColor();
-  smooth();
-  noFill();
   
   setupHelper();
   // Comment in for Zyn
@@ -72,8 +69,8 @@ void draw() {
     if (channels[0].getLatestPoint().value == 200){
       //delay(500);
       String err_msg1 = "Headset is on...";
-      String err_msg2 = "But no connection detected";
-      String err_msg3 = ":(";
+      String err_msg2 = "But no connection detected!";
+      String err_msg3 = ":-(";
   
       //println(red(nextColor));
       if (currR > red(nextColor)){
@@ -95,8 +92,8 @@ void draw() {
         currB+=1;
       }
       fill(currR,currG,currB);
-      println(currR, currG, currB);
-      println(red(nextColor) + "; " + green(nextColor) + "; " + blue(nextColor));
+      //println(currR, currG, currB);
+      //println(red(nextColor) + "; " + green(nextColor) + "; " + blue(nextColor));
       if (currR == red(nextColor) && currG == green(nextColor) && currB == blue(nextColor)){
         nextColorReached = true;
       }
@@ -209,10 +206,11 @@ void pickRandomColor() {
 }
 void setupHelper(){
   // abstracts a lot of the uninteresting setup code to make code more readable
-  // Set up window
   
-  
-  
+  frameRate(60);
+  pickRandomColor();
+  smooth();
+  noFill();
   // Create the channel objects
   channels[0] = new Channel("Signal Quality", color(0), "");
   channels[1] = new Channel("Attention", color(100), "");
