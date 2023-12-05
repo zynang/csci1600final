@@ -11,6 +11,10 @@ Brain brain(Serial1);
 String m = "none";
 const int buttonPin = 4;
 int timeSinceLastUpdate = 0;
+String next = "";
+String curr = "";
+String prev = "";
+int incrementer = 0;
 void setup() {
   // Enable internal pull-up resistor for buttonPin
   pinMode(buttonPin, INPUT_PULLUP);
@@ -21,12 +25,15 @@ void setup() {
   // Start the hardware serial.
   Serial1.begin(9600);
   Serial.begin(9600);
+  // Serial1.begin(38400);
+  // Serial.begin(38400);
 }
 
 void loop() {
   // Expect packets about once per second.
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
+  // Serial.println("test");
   if (brain.update()) {
     // Serial.println(brain.readErrors());
     timeSinceLastUpdate = millis();
