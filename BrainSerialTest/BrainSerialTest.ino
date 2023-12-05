@@ -34,7 +34,7 @@ void loop() {
     pinMode(buttonPin, INPUT); // Set the button pin as INPUT
     // delay(100);
   }
-  if (millis() - timeSinceLastUpdate > 5000){
+  if (millis() - timeSinceLastUpdate > 8000){
     // Serial.println(timeSinceLastUpdate);
     Serial.println("err1");
   }
