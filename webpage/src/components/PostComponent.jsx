@@ -18,6 +18,10 @@ const PostComponent = ({ updateResponse }) => {
       console.error('Error:', error);
     }
   };
+  const mockAttention = 'b: 0,52,51,284017,128944,41894,28099,10124,23677,1752,1289'
+  const mockMeditation = 'b: 0,40,51,284017,128944,41894,28099,10124,23677,1752,1289'
+  const mockSleep = 'b: 0,3,2,2840170,128944,41894,28099,10124,23677,1752,1289'
+  // TODO FILL MOCK WITH req
   const sendBrain = async () => {
     try{
       const response = await fetch('http://localhost:8000/brain', {
@@ -25,7 +29,7 @@ const PostComponent = ({ updateResponse }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ "data": Math.random() }),
+        body: JSON.stringify({ "data": mockAttention}),
       });
       // console.log(response));
     } catch (error) {
