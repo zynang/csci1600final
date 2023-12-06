@@ -29,6 +29,8 @@ int currR;
 int currG;
 int currB;
 boolean nextColorReached = false;
+boolean interruptStatus = false;
+
 void setup() {
   // Set up window
   size(1440,960);
@@ -40,10 +42,10 @@ void setup() {
   //serial.bufferUntil(10);
   
   // Comment in for Joe
-  for (int i = 0; i < Serial.list().length; i++) {
-    println("[" + i + "] " + Serial.list()[i]);
-  }
-  serial = new Serial(this, Serial.list()[5], 9600);
+  //for (int i = 0; i < Serial.list().length; i++) {
+  //  println("[" + i + "] " + Serial.list()[i]);
+  //}
+  serial = new Serial(this, Serial.list()[3], 9600);
   serial.bufferUntil(10);
   // Set up the graph
   rect = new Rect();
@@ -105,7 +107,13 @@ void draw() {
       text(err_msg3, 325, 600);
     }
     else{
-      rect.draw();
+      //rect.draw();
+      if (!interruptStatus){
+        rect.draw();
+      }
+      else if (interruptStatus){
+        rect.interruptDrawRandomRectangle();
+      }
     }
     
   }
@@ -135,61 +143,53 @@ void serialEvent(Serial p) {
        }
        else{
          String trimmed = incomingString.trim();
-         println(trimmed + " is incoming string; " + "err1 is other; " + trimmed.equals("err1") + " is result of equals");  
-         String[] incomingValues = split(trimmed, ',');
-         if (incomingString.equals("err1") || incomingValues.length == 1){
+         println(trimmed + " is incoming string; " + "err1 is other; " + trimmed.equals("err1") + " is result of equals"); 
+         String[] typeOfInput = split(trimmed, ' ');
+         //String[] incomingValues = split(typeOfInput[1], ',');
+         //|| incomingValues.length == 1 (maybe need for down below)
+         if (incomingString.equals("err1") || typeOfInput.length == 1){
            println("Received error over serial: " + incomingString);
            headsetOn=0;
          }
          else{
-           println("INCOMING STRING IS " + incomingString);
-           headsetOn=1;
+           String[] incomingBrainWaveData;
+           
+           //println(typeOfInput[0] == "b");
+           //println(typeOfInput[0]);
+           if (typeOfInput[0].equals("b:")){
+             // BRAINWAVE DATA
+             incomingBrainWaveData = split(typeOfInput[1], ',');
+             
+             println("INCOMING STRING IS " + incomingString);
+             headsetOn=1;
        
-           if (incomingValues.length > 1) {
-             packetCount++;
-             // Wait till the third packet or so to start recording to avoid initialization garbage.
-             if (packetCount > 3) {
-               for (int i = 0; i < incomingValues.length; i++) {
-                 String stringValue = incomingValues[i].trim();
-                 int newValue = Integer.parseInt(stringValue);
-                  // Zero the EEG power values if we don't have a signal.
-                  // Can be useful to leave them in for development.
-                  //if ((Integer.parseInt(incomingValues[0]) == 200) && (i > 2)) {
-                  //  newValue = 0;
-                  //}
-                  //println(" processing: " + newValue);
-                 channels[i].addDataPoint(newValue);
+             if (incomingBrainWaveData.length > 1) {
+               packetCount++;
+               // Wait till the third packet or so to start recording to avoid initialization garbage.
+               if (packetCount > 3) {
+                 for (int i = 0; i < incomingBrainWaveData.length; i++) {
+                   String stringValue = incomingBrainWaveData[i].trim();
+                   int newValue = Integer.parseInt(stringValue);
+                   channels[i].addDataPoint(newValue);
+                 }
                }
              }
+           } 
+           else if (typeOfInput[0].equals("i:")){
+             // INTERRUPT ALERT
+             // adjust the global variable
+             if (typeOfInput[1].equals("on")){
+               interruptStatus = true;
+             }
+             else if (typeOfInput[1].equals("off")){
+               interruptStatus = false;
+             }
+           }
+           else{
+             println("WE ARE HERE");
            }
        }
-       //String incomingString = p.readString().;
-       
-       
-      
-       
-       //}
-       
-
-
    }
-   //  String incomingString = p.readStringUntil('\n');
-     
-     
-     
-     
-   //}
-  
-  //String incomingString = p.readString();
-   //String incomingString = p.readStringUntil('\n');
-
-//  print("Received string over serial: ");
-//  println(incomingString);  
-  
-  //String[] incomingValues = split(incomingString, ',');
-
-  // Verify that the packet looks legit
-
 }
 
 
