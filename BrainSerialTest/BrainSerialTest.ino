@@ -38,6 +38,25 @@ void setup() {
   Serial.begin(9600);
   // Serial1.begin(38400);
   // Serial.begin(38400);
+  // Clear and enable WDT
+  NVIC_DisableIRQ(WDT_IRQn);
+  NVIC_ClearPendingIRQ(WDT_IRQn);
+  NVIC_SetPriority(WDT_IRQn, 0);
+  NVIC_EnableIRQ(WDT_IRQn);
+
+  //Configure and enable WDT GCLK:
+  GCLK->GENDIV.reg = GCLK_GENDIV_DIV(4) | GCLK_GENDIV_ID(5);
+  while(GCLK->STATUS.bit.SYNCBUSY);
+  GCLK->GENCTRL.reg = GCLK_GENCTRL_DIVSEL | GCLK_GENCTRL_ID(0x5) | GCLK_GENCTRL_GENEN | GCLK_GENCTRL_SRC(0x03);
+  while(GCLK->STATUS.bit.SYNCBUSY);
+  GCLK->CLKCTRL.reg = GCLK_CLKCTRL_GEN(0x5) | GCLK_CLKCTRL_CLKEN | GCLK_CLKCTRL_ID(0x03);
+
+  WDT->CONFIG.reg = WDT_CONFIG_PER(0x9); 
+  WDT->EWCTRL.reg = WDT_EWCTRL_EWOFFSET(0x8);
+  WDT->CTRL.reg = WDT_CTRL_ENABLE;
+
+   // Enable early warning interrupts on WDT:
+  WDT->INTENSET.reg = WDT_INTENSET_EW;
 }
 
 void loop() {
@@ -56,6 +75,11 @@ void loop() {
   if (millis() - timeSinceLastUpdate > 8000){
     Serial.println("err1");
   }
+
+  // Pet the watchdog
+  if (!WDT->STATUS.bit.SYNCBUSY) { //////
+  WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+  }
 }
 
 void buttonInterrupt() {
@@ -68,4 +92,13 @@ void buttonInterrupt() {
       i = "off";
     }
     Serial.println("i: " + i);
+}
+
+void WDT_Handler() {
+  //Clear interrupt register flag
+  WDT->INTFLAG.bit.EW = 1;
+  // WDT->CLEAR.bit.CLEAR = 0xA5;                    // Clear the Watchdog Timer and restart time-out period
+  // //REG_WDT_CLEAR = WDT_CLEAR_CLEAR_KEY;
+  // while (WDT->STATUS.bit.SYNCBUSY);               // Await synchronization of registers between clock domains
+  Serial.println("WATCHDOG RESET ABOUT TO HAPPEN BE CAREFUL :D");
 }
