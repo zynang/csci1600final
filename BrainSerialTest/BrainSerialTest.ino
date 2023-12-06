@@ -77,7 +77,7 @@ void loop() {
   }
 
   // Pet the watchdog
-  if (!WDT->STATUS.bit.SYNCBUSY) { //////
+  if (!WDT->STATUS.bit.SYNCBUSY) { 
   WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
   }
 }
@@ -97,8 +97,5 @@ void buttonInterrupt() {
 void WDT_Handler() {
   //Clear interrupt register flag
   WDT->INTFLAG.bit.EW = 1;
-  // WDT->CLEAR.bit.CLEAR = 0xA5;                    // Clear the Watchdog Timer and restart time-out period
-  // //REG_WDT_CLEAR = WDT_CLEAR_CLEAR_KEY;
-  // while (WDT->STATUS.bit.SYNCBUSY);               // Await synchronization of registers between clock domains
   Serial.println("WATCHDOG RESET ABOUT TO HAPPEN BE CAREFUL :D");
 }
