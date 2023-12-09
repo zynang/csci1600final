@@ -37,8 +37,12 @@ const int PACKET_SIZE = 64; // MAY NEED TO ADJUST, just reading from ping
 byte packetBuffer[PACKET_SIZE]; // MAY NEED TO ADJUST
 WiFiUDP Udp;
 WiFiClient wifiClient;
+WiFiSSLClient client;
 String serverAddress = "https://msv-web.vercel.app/";
 int serverPort = 443; 
+
+
+char httpGETbuf[200];
 // WiFiSSLClient client;
 HttpClient httpClient = HttpClient(wifiClient, serverAddress, serverPort);
 
@@ -84,11 +88,30 @@ void setup() {
 
 void loop() {
   // REMOVE AFTER TESTING IS DONE WITH WIFI
-  String mock = "b: 0,52,51,284017,128944,41894,28099,10124,23677,1752,1289";
-  sendPostRequest(mock);
-  Serial.println("sending");
-  delay(5000);
+//  String mock = "b: 0,52,51,284017,128944,41894,28099,10124,23677,1752,1289";
+//  sendPostRequest(mock);
+//  Serial.println("sending");
+//  delay(5000);
 
+  if (readWebpage()) {
+      Serial.println("Something was received using HTTP!");
+      /*
+       * LAB STEP 4e:
+       * Check if sBuf is not empty
+       * Send bytes via UART
+       */
+      
+      // Send a new request
+      delay(2000); // remove me!
+      sendHTTPReq();
+    }
+
+    // Connection ended / no more bytes to read
+    if (!client.connected()) {
+      delay(500);
+      // Try to reconnect
+      connectToWebpage();
+    }
 
   // Expect packets about once per second.
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
@@ -161,13 +184,13 @@ void setupWiFi() {
 
   // connectToNTP();
 
-  // if (connectToWebpage()) {
-  //   Serial.println("fetched webpage");
-  // } else {
-  //   Serial.println("ERROR: failed to fetch webpage");
-  //   Serial.println("Are SSL certificates installed?");
-  //   while(true); // 
-  // }
+   if (connectToWebpage()) {
+     Serial.println("fetched webpage");
+   } else {
+     Serial.println("ERROR: failed to fetch webpage");
+     Serial.println("Are SSL certificates installed?");
+     while(true); // 
+   }
   Serial.println();
 }
 // bool connectToWebpage() {
@@ -179,6 +202,28 @@ void setupWiFi() {
 //     return false;
 //   }
 // }
+bool connectToWebpage() {
+//  if (client.connect("msv-web-jmaffas-projects.vercel.app", 443)) {
+//  }
+//  if (client.connectSSL("https://msv-web-jmaffas-projects.vercel.app/", 443)) {
+  if (client.connectSSL("www.random.org", 443)) {
+
+    sendHTTPReq();
+    return true;
+  } else {
+    Serial.println("Failed to fetch webpage");
+    Serial.print("Error code: ");
+//    Serial.println(client.connectError());
+    return false;
+  }
+}
+void sendHTTPReq() {
+  // LAB STEP 4e: change the second argument to be (the current time since Jan 1, 1990 in seconds) / 3
+  sprintf(httpGETbuf, "GET /integers/?num=1&min=1&max=3&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
+  client.println(httpGETbuf);
+  client.println("Host: www.random.org");
+  client.println();
+}
 void sendPostRequest(String data) {
   // Make the request
   String dataHeader = "{\"data\":";
@@ -194,4 +239,24 @@ void sendPostRequest(String data) {
   // Print the response
   Serial.println("HTTP Status Code: " + String(statusCode));
   Serial.println("Response: " + response);
+}
+
+bool readWebpage() {
+    // Check for bytes to read
+  int len = client.available();
+  if (len == 0){
+    return false;
+  }
+
+  while (client.available()) {
+    Serial.print((char) client.read());
+  }
+  Serial.println();
+  return true;
+
+  /*
+   * LAB STEP 3b: change above code to only print RED, GREEN, or BLUE as it is read
+   * LAB STEP 3c: change above code to send 'r', 'g', or 'b' via Serial1
+   * LAB STEP 4e: change above code to put 'r', 'b', or 'g' in sBuf for sending on UART
+   */
 }
