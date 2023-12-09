@@ -15,6 +15,8 @@ String next = "";
 String curr = "";
 String prev = "";
 int incrementer = 0;
+
+
 void setup() {
   // Enable internal pull-up resistor for buttonPin
   pinMode(buttonPin, INPUT_PULLUP);
@@ -96,3 +98,4 @@ bool isValidHexCode(String hex) {
   }
   return true;
 }
+
