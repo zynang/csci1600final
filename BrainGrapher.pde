@@ -45,7 +45,9 @@ void setup() {
   //for (int i = 0; i < Serial.list().length; i++) {
   //  println("[" + i + "] " + Serial.list()[i]);
   //}
-  serial = new Serial(this, Serial.list()[3], 9600);
+  //serial = new Serial(this, Serial.list()[3], 9600);
+  // FIVE FOR JOE, 3 FOR HALEY/LYNDA?
+  serial = new Serial(this, Serial.list()[5], 9600);
   serial.bufferUntil(10);
   // Set up the graph
   rect = new Rect();

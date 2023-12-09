@@ -66,7 +66,7 @@ void loop() {
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
   // Serial.println("test");
   if (brain.update()) {
-    
+  
     // Serial.println(brain.readErrors());
     timeSinceLastUpdate = millis();
     Serial.print("b: ");
