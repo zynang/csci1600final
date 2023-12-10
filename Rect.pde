@@ -51,7 +51,7 @@ class Rect {
            //println("blue: " + (b / total) );
     }
    
-    fillGradient(100, height/4, height/2, rW, gW, bW, c1, c2,c3);
+    fillGradient(100, height/2, 300, rW, gW, bW, c1, c2,c3);
   }
 
 
@@ -60,7 +60,7 @@ class Rect {
     // red region
     for (int i = x; i <= x+rW; i++){
       stroke(r);
-      line(i, y, i, y+h);
+      line(i, y-h, i, y+h);
     }
     
     // gradient for 10 spaces
@@ -68,13 +68,13 @@ class Rect {
      float inter = map(j, x+rW,  x+rW + 200, 0, 1);
      color c = lerpColor(r, g, inter);
      stroke(c);
-     line(j, y, j, y+h);
+     line(j, y-h, j, y+h);
     }
     
     // green region
     for (int k = x+rW + 201; k <= x+rW + 200 + gW; k++){
       stroke(g);
-      line(k, y, k, y+h);
+      line(k, y-h, k, y+h);
     }
     
       
@@ -83,19 +83,19 @@ class Rect {
      float inter = map(l, x+rW + 200 + gW,  x+rW + 200 + gW+ 200, 0, 1);
      color c = lerpColor(g, b, inter);
      stroke(c);
-     line(l, y, l, y+h);
+     line(l, y-h, l, y+h);
     }
     
      // blue region
     for (int m = x+rW + 200 + gW + 200 + 1; m <= x+rW + 200 + gW + 200 +bW; m++){
       stroke(b);
-      line(m, y, m, y+h);
+      line(m, y-h, m, y+h);
     }
     
     
   }
   
-  void interruptDrawRandomRectangle(){
+  void interruptDrawRandomRectangle(int h){
     // Call this in the brainGrapher to draw a random rectangle when the interrupt is called
     //background(255);  // Set the background color to white
     //fill(0);  // Set the fill color to black
@@ -143,7 +143,7 @@ class Rect {
            //println("blue: " + (b / total) );
     }
    
-    fillGradient(100, height/4, height/2, rW, gW, bW, c1, c2,c3);
+    fillGradient(100, height/2, h, rW, gW, bW, c1, c2,c3);
   }
   
 }

@@ -28,6 +28,8 @@ int timeSinceLastColorChange = 0;
 int currR;
 int currG;
 int currB;
+int rectGrowth = 0;
+boolean growing = false;
 boolean nextColorReached = false;
 boolean interruptStatus = false;
 
@@ -77,50 +79,29 @@ void draw() {
       String err_msg3 = ":-(";
   
       estimateColor();
-      //println(red(nextColor));
-      //if (currR > red(nextColor)){
-      //  currR-=1;
-      //}
-      //else if (currR < red(nextColor)){
-      //  currR+=1;
-      //}
-      //if (currG > green(nextColor)){
-      //  currG-=1;
-      //}
-      //else if (currG < green(nextColor)){
-      //  currG+=1;
-      //}
-      //if (currB > blue(nextColor)){
-      //  currB-=1;
-      //}
-      //else if (currB < blue(nextColor)){
-      //  currB+=1;
-      //}
-      //fill(currR,currG,currB);
-      //println(currR, currG, currB);
-      //println(red(nextColor) + "; " + green(nextColor) + "; " + blue(nextColor));
-      //if (currR == red(nextColor) && currG == green(nextColor) && currB == blue(nextColor)){
-      //  nextColorReached = true;
-      //}
-      //fill(lerpedColor); // Text color
       textSize(70);
       text(err_msg1, 225, 400);
       text(err_msg2, 275, 500);
       text(err_msg3, 325, 600);
     }
     else{
-      //rect.draw();
       if (!interruptStatus){
         rect.draw();
       }
       else if (interruptStatus){
-        rect.interruptDrawRandomRectangle();
+        println(rectGrowth);
+        if (growing){
+          rectGrowth+=1;
+        }
+        else{
+          rectGrowth-=1;
+        }
+        rect.interruptDrawRandomRectangle(rectGrowth);
       }
     }
     
   }
   else{
-      //size(400, 400);
       estimateColor();
       textSize(70);
       text("Establish an Arduino connection!!!", 275, 400);
@@ -187,8 +168,21 @@ void serialEvent(Serial p) {
                interruptStatus = false;
              }
            }
+           else if (typeOfInput[0].equals("O:")){
+             println("RANDOM VALUERECEIVED");
+             String cleaned = incomingString.trim();
+             Integer num = Integer.parseInt(cleaned.substring(3));
+             if (num == 0){
+               growing = false;
+             }
+             else{
+               growing = true;
+             }
+             //randHeight = num;
+           }
            else{
              println("WE ARE HERE");
+             
            }
        }
    }
