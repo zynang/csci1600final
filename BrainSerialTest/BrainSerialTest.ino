@@ -5,6 +5,8 @@
 // Author: Eric Mika, 2010 revised in 2014
 
 #include <Brain.h>
+#include <WiFi101.h>
+#include <WiFiUdp.h>
 
 // Set up the brain parser, pass it the hardware serial object you want to listen on.
 Brain brain(Serial1);
@@ -26,6 +28,21 @@ int lastButtonState = LOW;  // the previous reading from the input pin
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
+
+// WIFI
+/* UDP setup for NTP (world clock) */
+//unsigned int localPort = 2390;      // local port to listen for UDP packets
+//IPAddress timeServer(129, 6, 15, 28); // time.nist.gov NTP server
+//const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+//byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
+// A UDP instance to let us send and receive packets over UDP
+WiFiUDP Udp;
+WiFiSSLClient client;
+boolean interruptRandomWifi = false;
+
+char httpGETbuf[200]; // to form HTTP GET request
+//unsigned long reqTime; // time of NTP request
+//unsigned long secsSince1900; // NTP response
 void setup() {
   // Enable internal pull-up resistor for buttonPin
   pinMode(buttonPin, INPUT_PULLUP);
@@ -36,6 +53,7 @@ void setup() {
   // Start the hardware serial.
   Serial1.begin(9600);
   Serial.begin(9600);
+  setupWiFi();
   // Serial1.begin(38400);
   // Serial.begin(38400);
   // Clear and enable WDT
@@ -61,14 +79,34 @@ void setup() {
 
 void loop() {
 
+//  if (readWebpage()) {
+////      Serial.println("Something was received using HTTP!");
+////      /*
+////       * LAB STEP 4e:
+////       * Check if sBuf is not empty
+////       * Send bytes via UART
+////       */
+////      
+////      // Send a new request
+//      delay(2000); // remove me!
+//      sendHTTPReq();
+//    }
   // Expect packets about once per second.
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
   // Serial.println("test");
   if (brain.update()) {
-    
-    // Serial.println(brain.readErrors());
     timeSinceLastUpdate = millis();
+    String csvVals = brain.readCSV();
+    if (interruptRandomWifi == true){
+      if (readWebpage()) {
+//        Serial.println("Something was received using HTTP!");
+        sendHTTPReq();
+      }
+//     Serial.print("r: ");
+    }
+    // Serial.println(brain.readErrors());
+    
     Serial.print("b: ");
     Serial.println(brain.readCSV());
   }
@@ -83,13 +121,16 @@ void loop() {
 }
 
 void buttonInterrupt() {
-  
+    
     // Toggle between on and off
+    // When interrupt, turning to on, want to send HTTP request, read in the last byte which is the number then pass that and parse it
     if (i == "off"){
       i = "on";
+      interruptRandomWifi = true;
     }
     else if (i == "on"){
       i = "off";
+      interruptRandomWifi = false;
     }
     Serial.println("i: " + i);
 }
@@ -98,4 +139,80 @@ void WDT_Handler() {
   //Clear interrupt register flag
   WDT->INTFLAG.bit.EW = 1;
   Serial.println("WATCHDOG RESET ABOUT TO HAPPEN BE CAREFUL :D");
+}
+
+/*
+ * Connect to WiFi network, get NTP time, and connect to random.org
+ */
+void setupWiFi() {
+  char ssid[] = "Brown-Guest";  // network SSID (name)
+  char pass[] = ""; // for networks that require a password
+  int status = WL_IDLE_STATUS;  // the WiFi radio's status
+
+  // attempt to connect to WiFi network:
+  while ( status != WL_CONNECTED) {
+    Serial.print("Attempting to connect to: ");
+    Serial.println(ssid);
+    status = WiFi.begin(ssid); // WiFi.begin(ssid, pass) for password
+    delay(5000);
+  }
+  Serial.println("Connected!");
+
+  if (connectToWebpage()) {
+    Serial.println("fetched webpage");
+  } else {
+    Serial.println("ERROR: failed to fetch webpage");
+    Serial.println("Are SSL certificates installed?");
+    while(true); // 
+  }
+  Serial.println();
+}
+
+/*
+ * Send SSL connection request to server
+ * Return true if successful
+ */
+bool connectToWebpage() {
+  if (client.connectSSL("www.random.org", 443)) {
+    sendHTTPReq();
+    return true;
+  } else {
+    Serial.println("Failed to fetch webpage");
+    return false;
+  }
+}
+
+/*
+ * Print response to HTTP request
+ * return true if response was received
+ */
+bool readWebpage() {
+    // Check for bytes to read
+  int len = client.available();
+  int counter = 0;
+  if (len == 0){
+    return false;
+  }
+
+  while (client.available()) {
+    counter+=1;
+    if (counter == len-1){
+      char num = (char) client.read();
+      Serial.print("O: ");
+      Serial.println(num);
+    }
+    client.read();
+  }
+  return true;
+}
+
+
+
+
+void sendHTTPReq() {
+  // LAB STEP 4e: change the second argument to be (the current time since Jan 1, 1990 in seconds) / 3
+  sprintf(httpGETbuf, "GET /integers/?num=1&min=0&max=1&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
+  client.println(httpGETbuf);
+  client.println("Host: www.random.org");
+  client.println();
 }
