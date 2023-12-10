@@ -38,6 +38,7 @@ unsigned long debounceDelay = 50;    // the debounce time; increase if the outpu
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 WiFiSSLClient client;
+boolean interruptRandomWifi = false;
 
 char httpGETbuf[200]; // to form HTTP GET request
 //unsigned long reqTime; // time of NTP request
@@ -78,14 +79,34 @@ void setup() {
 
 void loop() {
 
+//  if (readWebpage()) {
+////      Serial.println("Something was received using HTTP!");
+////      /*
+////       * LAB STEP 4e:
+////       * Check if sBuf is not empty
+////       * Send bytes via UART
+////       */
+////      
+////      // Send a new request
+//      delay(2000); // remove me!
+//      sendHTTPReq();
+//    }
   // Expect packets about once per second.
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
   // Serial.println("test");
   if (brain.update()) {
-  
-    // Serial.println(brain.readErrors());
     timeSinceLastUpdate = millis();
+    String csvVals = brain.readCSV();
+    if (interruptRandomWifi == true){
+      if (readWebpage()) {
+//        Serial.println("Something was received using HTTP!");
+        sendHTTPReq();
+      }
+//     Serial.print("r: ");
+    }
+    // Serial.println(brain.readErrors());
+    
     Serial.print("b: ");
     Serial.println(brain.readCSV());
   }
@@ -105,14 +126,11 @@ void buttonInterrupt() {
     // When interrupt, turning to on, want to send HTTP request, read in the last byte which is the number then pass that and parse it
     if (i == "off"){
       i = "on";
-      if (readWebpage()){
-        sendHTTPReq();
-      }
-//      sendHTTPReq();
-//      readWebpage();
+      interruptRandomWifi = true;
     }
     else if (i == "on"){
       i = "off";
+      interruptRandomWifi = false;
     }
     Serial.println("i: " + i);
 }
@@ -173,32 +191,27 @@ bool readWebpage() {
   int len = client.available();
   int counter = 0;
   if (len == 0){
-    Serial.println("RETURNING FALSE");
     return false;
   }
 
   while (client.available()) {
-//    counter+=1;
-//    if (counter == len-1){
-//      char num = (char) client.read();
-//      char char_as_num = (char) num;
-//      Serial.println(char_as_num);
-//    }
-    Serial.print((char) client.read());
+    counter+=1;
+    if (counter == len-1){
+      char num = (char) client.read();
+      Serial.print("O: ");
+      Serial.println(num);
+    }
+    client.read();
   }
-  Serial.println();
   return true;
-
-  /*
-   * LAB STEP 3b: change above code to only print RED, GREEN, or BLUE as it is read
-   * LAB STEP 3c: change above code to send 'r', 'g', or 'b' via Serial1
-   * LAB STEP 4e: change above code to put 'r', 'b', or 'g' in sBuf for sending on UART
-   */
 }
+
+
+
 
 void sendHTTPReq() {
   // LAB STEP 4e: change the second argument to be (the current time since Jan 1, 1990 in seconds) / 3
-  sprintf(httpGETbuf, "GET /integers/?num=1&min=1&max=3&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
+  sprintf(httpGETbuf, "GET /integers/?num=1&min=0&max=1&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
   client.println(httpGETbuf);
   client.println("Host: www.random.org");
   client.println();
