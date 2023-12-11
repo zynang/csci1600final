@@ -12,9 +12,9 @@
 Brain brain(Serial1);
 String i = "off";
 int timeSinceLastUpdate = 0;
-String next = "";
-String curr = "";
-String prev = "";
+//String next = "";
+//String curr = "";
+//String prev = "";
 int incrementer = 0;
 const int buttonPin = 4; // the number of the pushbutton pin
 
@@ -54,8 +54,6 @@ void setup() {
   Serial1.begin(9600);
   Serial.begin(9600);
   setupWiFi();
-  // Serial1.begin(38400);
-  // Serial.begin(38400);
   // Clear and enable WDT
   NVIC_DisableIRQ(WDT_IRQn);
   NVIC_ClearPendingIRQ(WDT_IRQn);
@@ -78,19 +76,6 @@ void setup() {
 }
 
 void loop() {
-
-//  if (readWebpage()) {
-////      Serial.println("Something was received using HTTP!");
-////      /*
-////       * LAB STEP 4e:
-////       * Check if sBuf is not empty
-////       * Send bytes via UART
-////       */
-////      
-////      // Send a new request
-//      delay(2000); // remove me!
-//      sendHTTPReq();
-//    }
   // Expect packets about once per second.
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
@@ -100,17 +85,13 @@ void loop() {
     String csvVals = brain.readCSV();
     if (interruptRandomWifi == true){
       if (readWebpage()) {
-//        Serial.println("Something was received using HTTP!");
         sendHTTPReq();
       }
-//     Serial.print("r: ");
     }
-    // Serial.println(brain.readErrors());
-    
     Serial.print("b: ");
     Serial.println(brain.readCSV());
   }
-  if (millis() - timeSinceLastUpdate > 8000){
+  if (millis() - timeSinceLastUpdate > 5000){
     Serial.println("err1");
   }
 
@@ -121,7 +102,6 @@ void loop() {
 }
 
 void buttonInterrupt() {
-    
     // Toggle between on and off
     // When interrupt, turning to on, want to send HTTP request, read in the last byte which is the number then pass that and parse it
     if (i == "off"){
@@ -205,8 +185,6 @@ bool readWebpage() {
   }
   return true;
 }
-
-
 
 
 void sendHTTPReq() {

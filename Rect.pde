@@ -35,20 +35,11 @@ class Rect {
     }
     
     int total = (int) (r + g + b);
-    //int total = (int) (255 + 0.5*255 + 0.5*255x);
-          //println("total: " + r + g + b);
 
     if (r != 0 && g != 0 && b !=0 ){
-      //println(rW);
       rW = (int)((r / total) * (width - 600));
-      //println(rW);
-      //println("red: " + (r / total) );
-
       gW = (int)((g / total) * (width - 600));    
-      //println("green: " + (g / total) );
-
       bW = (int)((b / total) * (width - 600));
-           //println("blue: " + (b / total) );
     }
    
     fillGradient(100, height/2, 300, rW, gW, bW, c1, c2,c3);
@@ -97,10 +88,6 @@ class Rect {
   
   void interruptDrawRandomRectangle(int h){
     // Call this in the brainGrapher to draw a random rectangle when the interrupt is called
-    //background(255);  // Set the background color to white
-    //fill(0);  // Set the fill color to black
-    //rect(50, 50, 300, 200);  // Create a black rectangle at position (50, 50) with a width of 300 and a height of 200
-    
     
     int rW = 0;
     int gW = 0;
@@ -127,20 +114,13 @@ class Rect {
     }
     
     int total = (int) (r + g + b);
-    //int total = (int) (255 + 0.5*255 + 0.5*255x);
-          //println("total: " + r + g + b);
 
     if (r != 0 && g != 0 && b !=0 ){
-      //println(rW);
       rW = (int)((r / total) * (width - 600));
-      //println(rW);
-      //println("red: " + (r / total) );
 
       gW = (int)((g / total) * (width - 600));    
-      //println("green: " + (g / total) );
 
       bW = (int)((b / total) * (width - 600));
-           //println("blue: " + (b / total) );
     }
    
     fillGradient(100, height/2, h, rW, gW, bW, c1, c2,c3);
