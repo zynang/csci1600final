@@ -40,6 +40,7 @@ unsigned long debounceDelay = 50;    // the debounce time; increase if the outpu
 WiFiUDP Udp;
 WiFiSSLClient client;
 boolean interruptRandomWifi = false;
+boolean testing = true;
 
 char httpGETbuf[200]; // to form HTTP GET request
 //unsigned long reqTime; // time of NTP request
@@ -55,6 +56,7 @@ void setup() {
   Serial1.begin(9600);
   Serial.begin(9600);
   while(!Serial); // remove when running with headset
+
   setupWiFi();
   // Clear and enable WDT
   NVIC_DisableIRQ(WDT_IRQn);
@@ -75,8 +77,11 @@ void setup() {
 
    // Enable early warning interrupts on WDT:
   WDT->INTENSET.reg = WDT_INTENSET_EW;
+  
   // uncomment to run unit tests
   // testButtonInterrupt();
+
+
 }
 
 void loop() {
@@ -88,6 +93,34 @@ void loop() {
   // uncomment to run unit tests
   // testWatchDogTimer();
   // testNoData();
+
+  // uncomment to run system tests
+  while(testing){
+  
+    testSingularBrainWaveSerialInput();
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+    
+    testSingularInterruptSerialInput();
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+
+    testArduinoConnectionError();
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+
+    testing = false;
+  }
+
 
   if (brain.update()) {
     timeSinceLastUpdate = millis();
@@ -146,7 +179,7 @@ void setupWiFi() {
     status = WiFi.begin(ssid); // WiFi.begin(ssid, pass) for password
     delay(5000);
   }
-  Serial.println("Connected!");
+  //Serial.println("Connected!");
 
   if (connectToWebpage()) {
     Serial.println("fetched webpage");

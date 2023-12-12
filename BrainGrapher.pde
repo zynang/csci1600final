@@ -37,7 +37,7 @@ void setup() {
   // 5 on Joe's computer, 3 on Lynda/Haley's
   //serial = new Serial(this, Serial.list()[3], 9600);
   
-  serial = new Serial(this, Serial.list()[5], 9600);
+  serial = new Serial(this, Serial.list()[3], 9600);
   serial.bufferUntil(10);
   rect = new Rect();
 }
@@ -169,7 +169,7 @@ void serialEvent(Serial p) {
              }
            }
            else{
-             println("Uncaught exception");
+             println("Other random serial input");
            }
        }
    }
