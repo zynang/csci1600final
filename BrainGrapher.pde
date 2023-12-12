@@ -59,11 +59,11 @@ void draw() {
         nextState = State.ARDUINO_ERROR;
       }
       // 1-2 Headset is connected but is getting bad values (200 for first, 0 for second and 0 for third)
-      else if (headsetOn){
+      else if (headsetOn && !isGoodConnection()){
         nextState = State.CONNECTION_ERROR;
       }
       // 1-3 Headset is on and getting good values (no interrupt)
-      else if(headsetOn && isGoodConnection() && !interruptStatus){
+      else if(headsetOn && isGoodConnection()){
         //rect.draw();
         nextState = State.VISUALIZATION;
       }
