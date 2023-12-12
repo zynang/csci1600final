@@ -9,7 +9,7 @@ enum State {
 };
 int packetCount = 0;
 int globalMax = 0;
-int headsetOn = 0;
+boolean headsetOn = false;
 int currColor;
 int nextColor;
 int timeSinceLastColorChange = 0;
@@ -17,6 +17,8 @@ int currR;
 int currG;
 int currB;
 int rectGrowth = 0;
+State currState = State.ARDUINO_ERROR;
+State nextState = State.ARDUINO_ERROR;
 boolean growing = false;
 boolean nextColorReached = false;
 boolean interruptStatus = false;
@@ -41,50 +43,67 @@ void setup() {
   serial.bufferUntil(10);
   rect = new Rect();
 }
-
-// TODO ADD GUARDS THAT CORRESPOND TO STATES
-// STATE 1 = Arduino connection
-// STATE 2 = Headset connection
-// State 3 = Brainwave viz
-// State 4 = interrupt viz 
-
-// 1-1
-// 1-2
-// 1-3
-// 2-2
-// 2-3
-// 2-1
-// 3-3
-// 3-4
-// 3-2
-// 3-1
-// 4-4
-// 4-3
-// 4-2
-// 4-1
 void draw() {
-  serialEvent(serial);
-  // Keep track of global maxima
+  readSerial(serial);
   updateInputs(serial);
-  // Clear the background
   background(255);
-  //
-  if (headsetOn==1){
-    if (channels[0].getLatestPoint().value == 200){
-      String err_msg1 = "Headset is on...";
-      String err_msg2 = "But no connection detected!";
-      String err_msg3 = ":-(";
-      estimateColor();
-      textSize(70);
-      text(err_msg1, 225, 400);
-      text(err_msg2, 275, 500);
-      text(err_msg3, 325, 600);
-    }
-    else{
-      if (!interruptStatus){
-        rect.draw();
+  currState = nextState;
+  switch (currState){
+    // STATE 1
+    case ARDUINO_ERROR:
+      // 1-1 Circuit is down or Headset is off (receiving err1)
+      if (!headsetOn ) { // TODO: or circuit is down? maybe not
+        drawHeadsetError();
+        nextState = State.ARDUINO_ERROR;
       }
-      else if (interruptStatus){
+      // 1-2 Headset is connected but is getting bad values (200 for first, 0 for second and 0 for third)
+      else if (headsetOn && !isGoodConnection()){
+        drawConnectionError();
+        nextState = State.CONNECTION_ERROR;
+      }
+      // 1-3 Headset is on and getting good values (no interrupt)
+      else if(headsetOn && isGoodConnection()){
+        rect.draw();
+        nextState = State.VISUALIZATION;
+      }
+      break;
+    // 2
+    case CONNECTION_ERROR:
+      // 2-1 (receiving err1)
+      if (!headsetOn ) { // TODO: or circuit is down? maybe not
+        drawHeadsetError();
+        nextState = State.ARDUINO_ERROR;
+      }
+      // 2-2 Headset is on but is getting bad values (200 for first, 0 for second and 0 for third)
+      else if (headsetOn && !isGoodConnection()){
+        drawConnectionError();
+        nextState = State.CONNECTION_ERROR;
+      }
+      // 2-3 Headset is on and getting good values (no interrupt)
+      else if(headsetOn && isGoodConnection()){
+        rect.draw();
+        nextState = State.VISUALIZATION;
+      }
+      break;
+    // 3
+    case VISUALIZATION:
+      // 3-1 (receiving err1)
+      if (!headsetOn){
+        drawHeadsetError();
+        nextState = State.ARDUINO_ERROR;
+      }
+      // 3-2 (200 for first, 0 for second and third)
+      else if (headsetOn && !isGoodConnection()){
+        drawConnectionError();
+        nextState = State.CONNECTION_ERROR;
+      }
+      // 3-3 (good values start coming in, not 200 and rest are something AND no interrupt)
+      else if (headsetOn && isGoodConnection() && !interruptStatus){
+        rect.draw();
+        nextState = State.VISUALIZATION;
+      }
+      // 3-4 (good values AND interrupt)
+      else if (headsetOn && isGoodConnection() && interruptStatus){
         if (growing){
           rectGrowth+=1;
         }
@@ -92,16 +111,48 @@ void draw() {
           rectGrowth-=1;
         }
         rect.interruptDrawRandomRectangle(rectGrowth);
+        nextState = State.INTERRUPT;
       }
-    }
-    
-  }
-  else{
-      estimateColor();
-      textSize(70);
-      text("Establish an Arduino connection!!!", 275, 400);
-      text("<(•-•<)", 650, 600);
-  }
+      break;
+    // 4
+    case INTERRUPT:
+      // 4-1 (receiving err1)
+      if (!headsetOn){
+        drawHeadsetError();
+        nextState = State.ARDUINO_ERROR;
+      }
+      // 4-2 (bad values)
+      else if (headsetOn && !isGoodConnection()){
+        drawConnectionError();
+        nextState = State.CONNECTION_ERROR;
+      }
+      // 4-3 (good values and no interrupt)
+      else if (headsetOn && isGoodConnection() && !interruptStatus){
+        rect.draw();
+        nextState = State.VISUALIZATION;
+      }
+      // 4-4 (good values and interrupt)
+      else if (headsetOn && isGoodConnection() && interruptStatus){
+        if (growing){
+          rectGrowth+=1;
+        }
+        else{
+          rectGrowth-=1;
+        }
+        rect.interruptDrawRandomRectangle(rectGrowth);
+        nextState = State.INTERRUPT;
+      }
+      break;
+    // should never be reached!!!
+    default:
+      println("You did bad things");
+      nextState = currState;
+      break;
+    };
+}
+
+boolean isGoodConnection(){
+  return (channels[0].getLatestPoint().value != 200 && channels[1].getLatestPoint().value!= 0 && channels[2].getLatestPoint().value != 0);
 }
 
 void updateInputs(Serial serial) {
@@ -117,62 +168,79 @@ void updateInputs(Serial serial) {
     timeSinceLastColorChange = millis();
   }
 }
+void drawConnectionError(){
+  String err_msg1 = "Headset is on...";
+  String err_msg2 = "But no/bad connection detected!";
+  String err_msg3 = ":-(";
+  String err_msg4 = "Check ear connection!";
+  estimateColor();
+  textSize(70);
+  text(err_msg1, 475, 400);
+  text(err_msg2, 275, 500);
+  text(err_msg3, 700, 600);
+  text(err_msg4, 400, 700);
+}
+void drawHeadsetError(){
+  estimateColor();
+  textSize(70);
+  text("Turn on the headset!!!", 110, 400);
+  text("<(•-•<)", 650, 600);
+}
+void readSerial(Serial p) {
+   String incomingString = p.readStringUntil('\n');
+   if (incomingString == null){
+     return;
+   }
+   else{
+     String trimmed = incomingString.trim();
+     String[] typeOfInput = split(trimmed, ' ');
+     if (incomingString.equals("err1") || typeOfInput.length == 1){
+       println("Received error over serial: " + incomingString);
+       headsetOn=false;
+     }
+     else{
+       String[] incomingBrainWaveData;
 
-void serialEvent(Serial p) {
-       String incomingString = p.readStringUntil('\n');
-       if (incomingString == null){
-         return;
+       if (typeOfInput[0].equals("b:")){
+         incomingBrainWaveData = split(typeOfInput[1], ',');       
+         println("Incoming string is: " + incomingString);
+         headsetOn=true;
+   
+         if (incomingBrainWaveData.length > 1) {
+           packetCount++;
+           // Wait till the third packet or so to start recording to avoid initialization garbage.
+             for (int i = 0; i < incomingBrainWaveData.length; i++) {
+               String stringValue = incomingBrainWaveData[i].trim();
+               int newValue = Integer.parseInt(stringValue);
+               channels[i].addDataPoint(newValue);
+             }
+           }
+       } 
+       // Interrupt triggered
+       else if (typeOfInput[0].equals("i:")){
+         // adjust the global variable
+         if (typeOfInput[1].equals("on")){
+           interruptStatus = true;
+         }
+         else if (typeOfInput[1].equals("off")){
+           interruptStatus = false;
+         }
        }
-       else{
-         String trimmed = incomingString.trim();
-         String[] typeOfInput = split(trimmed, ' ');
-         if (incomingString.equals("err1") || typeOfInput.length == 1){
-           println("Received error over serial: " + incomingString);
-           headsetOn=0;
+       else if (typeOfInput[0].equals("O:")){
+         String cleaned = incomingString.trim();
+         Integer num = Integer.parseInt(cleaned.substring(3));
+         if (num == 0){
+           growing = false;
          }
          else{
-           String[] incomingBrainWaveData;
-  
-           if (typeOfInput[0].equals("b:")){
-             incomingBrainWaveData = split(typeOfInput[1], ',');       
-             println("Incoming string is: " + incomingString);
-             headsetOn=1;
-       
-             if (incomingBrainWaveData.length > 1) {
-               packetCount++;
-               // Wait till the third packet or so to start recording to avoid initialization garbage.
-                 for (int i = 0; i < incomingBrainWaveData.length; i++) {
-                   String stringValue = incomingBrainWaveData[i].trim();
-                   int newValue = Integer.parseInt(stringValue);
-                   channels[i].addDataPoint(newValue);
-                 }
-               }
-           } 
-           // Interrupt triggered
-           else if (typeOfInput[0].equals("i:")){
-             // adjust the global variable
-             if (typeOfInput[1].equals("on")){
-               interruptStatus = true;
-             }
-             else if (typeOfInput[1].equals("off")){
-               interruptStatus = false;
-             }
-           }
-           else if (typeOfInput[0].equals("O:")){
-             String cleaned = incomingString.trim();
-             Integer num = Integer.parseInt(cleaned.substring(3));
-             if (num == 0){
-               growing = false;
-             }
-             else{
-               growing = true;
-             }
-           }
-           else{
-             println("Uncaught exception");
-           }
+           growing = true;
+         }
+       }
+       else{
+         println("Uncaught exception");
        }
    }
+ }
 }
 // Utilities
 
@@ -196,8 +264,6 @@ void estimateColor(){
       currB+=1;
     }
     fill(currR,currG,currB);
-    //println(currR, currG, currB);
-    //println(red(nextColor) + "; " + green(nextColor) + "; " + blue(nextColor));
     if (currR == red(nextColor) && currG == green(nextColor) && currB == blue(nextColor)){
       nextColorReached = true;
     }

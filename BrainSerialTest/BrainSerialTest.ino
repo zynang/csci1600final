@@ -12,9 +12,6 @@
 Brain brain(Serial1);
 String i = "off";
 int timeSinceLastUpdate = 0;
-//String next = "";
-//String curr = "";
-//String prev = "";
 int incrementer = 0;
 const int buttonPin = 4; // the number of the pushbutton pin
 
@@ -28,21 +25,13 @@ int lastButtonState = LOW;  // the previous reading from the input pin
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
-
 // WIFI
-/* UDP setup for NTP (world clock) */
-//unsigned int localPort = 2390;      // local port to listen for UDP packets
-//IPAddress timeServer(129, 6, 15, 28); // time.nist.gov NTP server
-//const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-//byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 WiFiSSLClient client;
 boolean interruptRandomWifi = false;
 
 char httpGETbuf[200]; // to form HTTP GET request
-//unsigned long reqTime; // time of NTP request
-//unsigned long secsSince1900; // NTP response
 void setup() {
   // Enable internal pull-up resistor for buttonPin
   pinMode(buttonPin, INPUT_PULLUP);
