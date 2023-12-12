@@ -11,7 +11,6 @@
 // Set up the brain parser, pass it the hardware serial object you want to listen on.
 Brain brain(Serial1);
 String i = "off";
-String err;
 int timeSinceLastUpdate = 0;
 int incrementer = 0;
 const int buttonPin = 4; // the number of the pushbutton pin
@@ -43,7 +42,6 @@ void setup() {
   // Start the hardware serial.
   Serial1.begin(9600);
   Serial.begin(9600);
-  while(!Serial); // remove when running with headset
   setupWiFi();
   // Clear and enable WDT
   NVIC_DisableIRQ(WDT_IRQn);
@@ -64,8 +62,6 @@ void setup() {
 
    // Enable early warning interrupts on WDT:
   WDT->INTENSET.reg = WDT_INTENSET_EW;
-  // uncomment to run unit tests
-  // testButtonInterrupt();
 }
 
 void loop() {
@@ -73,11 +69,6 @@ void loop() {
   // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
   // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
   // Serial.println("test");
-
-  // uncomment to run unit tests
-  // testWatchDogTimer();
-  // testNoData();
-
   if (brain.update()) {
     timeSinceLastUpdate = millis();
     String csvVals = brain.readCSV();
@@ -90,16 +81,16 @@ void loop() {
     Serial.println(brain.readCSV());
   }
   if (millis() - timeSinceLastUpdate > 5000){
-    err = "err1";
     Serial.println("err1");
     delay(50);
     
   }
+  // Pet the watchdog
   if (!WDT->STATUS.bit.SYNCBUSY) { 
       WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
   }
 
-  // Pet the watchdog
+  
   
 }
 

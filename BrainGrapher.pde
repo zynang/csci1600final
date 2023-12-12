@@ -60,7 +60,6 @@ void draw() {
       }
       // 1-2 Headset is connected but is getting bad values (200 for first, 0 for second and 0 for third)
       else if (headsetOn){
-        //drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 1-3 Headset is on and getting good values (no interrupt)
@@ -72,8 +71,7 @@ void draw() {
     // 2
     case CONNECTION_ERROR:
       // 2-1 (receiving err1)
-      if (!headsetOn) { // TODO: or circuit is down? maybe not
-        //drawHeadsetError();
+      if (!headsetOn) { 
         nextState = State.ARDUINO_ERROR;
       }
       // 2-2 Headset is on but is getting bad values (200 for first, 0 for second and 0 for third)
@@ -83,7 +81,6 @@ void draw() {
       }
       // 2-3 Headset is on and getting good values (no interrupt)
       else if(headsetOn && isGoodConnection() && !interruptStatus){
-        //rect.draw();
         nextState = State.VISUALIZATION;
       }
       break;
@@ -91,12 +88,10 @@ void draw() {
     case VISUALIZATION:
       // 3-1 (receiving err1)
       if (!headsetOn){
-        //drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 3-2 (200 for first, 0 for second and third)
       else if (headsetOn && !isGoodConnection()){
-        //drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 3-3 (good values start coming in, not 200 and rest are something AND no interrupt)
@@ -106,13 +101,6 @@ void draw() {
       }
       // 3-4 (good values AND interrupt)
       else if (headsetOn && isGoodConnection() && interruptStatus){
-        //if (growing){
-        //  rectGrowth+=1;
-        //}
-        //else{
-        //  rectGrowth-=1;
-        //}
-        //rect.interruptDrawRandomRectangle(rectGrowth);
         nextState = State.INTERRUPT;
       }
       break;
@@ -120,17 +108,14 @@ void draw() {
     case INTERRUPT:
       // 4-1 (receiving err1)
       if (!headsetOn){
-        //drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 4-2 (bad values)
       else if (headsetOn && !isGoodConnection()){
-        //drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 4-3 (good values and no interrupt)
       else if (headsetOn && isGoodConnection() && !interruptStatus){
-        //rect.draw();
         nextState = State.VISUALIZATION;
       }
       // 4-4 (good values and interrupt)
@@ -147,7 +132,7 @@ void draw() {
       break;
     // should never be reached!!!
     default:
-      println("You did bad things");
+      println("You did bad things! You should not reach here!");
       nextState = currState;
       break;
     };
