@@ -82,12 +82,15 @@ void loop() {
   }
   if (millis() - timeSinceLastUpdate > 5000){
     Serial.println("err1");
+    delay(50);
+    
+  }
+  if (!WDT->STATUS.bit.SYNCBUSY) { 
+      WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
   }
 
   // Pet the watchdog
-  if (!WDT->STATUS.bit.SYNCBUSY) { 
-  WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
-  }
+  
 }
 
 void buttonInterrupt() {
@@ -125,7 +128,7 @@ void setupWiFi() {
     status = WiFi.begin(ssid); // WiFi.begin(ssid, pass) for password
     delay(5000);
   }
-  Serial.println("Connected!");
+//  Serial.println("Connected!");
 
   if (connectToWebpage()) {
     Serial.println("fetched webpage");

@@ -22,6 +22,7 @@ State nextState = State.ARDUINO_ERROR;
 boolean growing = false;
 boolean nextColorReached = false;
 boolean interruptStatus = false;
+int counter = 0;
 
 void setup() {
   // Set up window
@@ -48,40 +49,41 @@ void draw() {
   updateInputs(serial);
   background(255);
   currState = nextState;
+  // FSM
   switch (currState){
     // STATE 1
     case ARDUINO_ERROR:
       // 1-1 Circuit is down or Headset is off (receiving err1)
-      if (!headsetOn ) { // TODO: or circuit is down? maybe not
+      if (!headsetOn) { // TODO: or circuit is down? maybe not
         drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 1-2 Headset is connected but is getting bad values (200 for first, 0 for second and 0 for third)
-      else if (headsetOn && !isGoodConnection()){
-        drawConnectionError();
+      else if (headsetOn){
+        //drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 1-3 Headset is on and getting good values (no interrupt)
-      else if(headsetOn && isGoodConnection()){
-        rect.draw();
+      else if(headsetOn && isGoodConnection() && !interruptStatus){
+        //rect.draw();
         nextState = State.VISUALIZATION;
       }
       break;
     // 2
     case CONNECTION_ERROR:
       // 2-1 (receiving err1)
-      if (!headsetOn ) { // TODO: or circuit is down? maybe not
-        drawHeadsetError();
+      if (!headsetOn) { // TODO: or circuit is down? maybe not
+        //drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 2-2 Headset is on but is getting bad values (200 for first, 0 for second and 0 for third)
-      else if (headsetOn && !isGoodConnection()){
+      else if ((headsetOn && !isGoodConnection())){
         drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 2-3 Headset is on and getting good values (no interrupt)
-      else if(headsetOn && isGoodConnection()){
-        rect.draw();
+      else if(headsetOn && isGoodConnection() && !interruptStatus){
+        //rect.draw();
         nextState = State.VISUALIZATION;
       }
       break;
@@ -89,12 +91,12 @@ void draw() {
     case VISUALIZATION:
       // 3-1 (receiving err1)
       if (!headsetOn){
-        drawHeadsetError();
+        //drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 3-2 (200 for first, 0 for second and third)
       else if (headsetOn && !isGoodConnection()){
-        drawConnectionError();
+        //drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 3-3 (good values start coming in, not 200 and rest are something AND no interrupt)
@@ -104,13 +106,13 @@ void draw() {
       }
       // 3-4 (good values AND interrupt)
       else if (headsetOn && isGoodConnection() && interruptStatus){
-        if (growing){
-          rectGrowth+=1;
-        }
-        else{
-          rectGrowth-=1;
-        }
-        rect.interruptDrawRandomRectangle(rectGrowth);
+        //if (growing){
+        //  rectGrowth+=1;
+        //}
+        //else{
+        //  rectGrowth-=1;
+        //}
+        //rect.interruptDrawRandomRectangle(rectGrowth);
         nextState = State.INTERRUPT;
       }
       break;
@@ -118,17 +120,17 @@ void draw() {
     case INTERRUPT:
       // 4-1 (receiving err1)
       if (!headsetOn){
-        drawHeadsetError();
+        //drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 4-2 (bad values)
       else if (headsetOn && !isGoodConnection()){
-        drawConnectionError();
+        //drawConnectionError();
         nextState = State.CONNECTION_ERROR;
       }
       // 4-3 (good values and no interrupt)
       else if (headsetOn && isGoodConnection() && !interruptStatus){
-        rect.draw();
+        //rect.draw();
         nextState = State.VISUALIZATION;
       }
       // 4-4 (good values and interrupt)
@@ -183,8 +185,9 @@ void drawConnectionError(){
 void drawHeadsetError(){
   estimateColor();
   textSize(70);
-  text("Turn on the headset!!!", 110, 400);
-  text("<(•-•<)", 650, 600);
+  text("Turn on the headset!!!", 220, 400);
+  text("Might be buffering if just reset...", 220, 500);
+  text("<(•-•<)", 650, 700);
 }
 void readSerial(Serial p) {
    String incomingString = p.readStringUntil('\n');
@@ -195,7 +198,8 @@ void readSerial(Serial p) {
      String trimmed = incomingString.trim();
      String[] typeOfInput = split(trimmed, ' ');
      if (incomingString.equals("err1") || typeOfInput.length == 1){
-       println("Received error over serial: " + incomingString);
+       counter++;
+       println("Received error over serial: " + incomingString + str(counter));
        headsetOn=false;
      }
      else{
@@ -219,10 +223,13 @@ void readSerial(Serial p) {
        // Interrupt triggered
        else if (typeOfInput[0].equals("i:")){
          // adjust the global variable
-         if (typeOfInput[1].equals("on")){
+         if (typeOfInput[1].equals("on") && currState==State.VISUALIZATION){
            interruptStatus = true;
          }
-         else if (typeOfInput[1].equals("off")){
+         else if (typeOfInput[1].equals("off") && currState==State.INTERRUPT){
+           interruptStatus = false;
+         }
+         else{
            interruptStatus = false;
          }
        }
@@ -237,7 +244,7 @@ void readSerial(Serial p) {
          }
        }
        else{
-         println("Uncaught exception");
+         println("Uncaught exception " + incomingString);
        }
    }
  }
