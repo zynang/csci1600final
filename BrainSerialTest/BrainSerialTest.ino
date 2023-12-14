@@ -11,6 +11,8 @@
 // Set up the brain parser, pass it the hardware serial object you want to listen on.
 Brain brain(Serial1);
 String i = "off";
+String err;
+String signalStrengthError;
 int timeSinceLastUpdate = 0;
 int incrementer = 0;
 const int buttonPin = 4; // the number of the pushbutton pin
@@ -44,7 +46,8 @@ void setup() {
   // Start the hardware serial.
   Serial1.begin(9600);
   Serial.begin(9600);
-  while(!Serial); // remove when running with headset
+
+  // while(!Serial); // remove when running with headset
 
   setupWiFi();
   // Clear and enable WDT
@@ -66,11 +69,9 @@ void setup() {
 
    // Enable early warning interrupts on WDT:
   WDT->INTENSET.reg = WDT_INTENSET_EW;
-  
+
   // uncomment to run unit tests
   // testButtonInterrupt();
-
-}
 
 void loop() {
   // Expect packets about once per second.
@@ -87,6 +88,7 @@ void loop() {
   if (brain.update()) {
     timeSinceLastUpdate = millis();
     String csvVals = brain.readCSV();
+    // checkSignalStrength(csvVals);
     if (interruptRandomWifi == true){
       if (readWebpage()) {
         sendHTTPReq();
@@ -94,10 +96,11 @@ void loop() {
     }
     Serial.print("b: ");
     Serial.println(brain.readCSV());
+
   }
   if (millis() - timeSinceLastUpdate > 5000){
     err = "err1";
-    Serial.println("err1");
+    Serial.println(err);
     delay(50);
     
   }
@@ -106,8 +109,9 @@ void loop() {
       WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
   }
 
-  
-  
+  // testWatchDogTimer();
+  // testNoData();
+  // testSignalStrength();
 }
 
 void buttonInterrupt() {
@@ -249,4 +253,19 @@ void runSystemTests(){
 
     testing = false;
   }
+
+void checkSignalStrength(String csvData) {
+    int csv = csvData.indexOf(',');
+    
+    if (csv != -1) {
+        String signalStrengthStr = csvData.substring(0, csv);
+
+        int signalStrength = signalStrengthStr.toInt();
+
+        if (signalStrength != 0) { 
+              // when headset is on but no human interation detected
+              signalStrengthError = "Headset is on but no connection detected!";
+              Serial.println(signalStrengthError);
+        }
+    }
 }
