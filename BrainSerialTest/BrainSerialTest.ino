@@ -11,11 +11,7 @@
 // Set up the brain parser, pass it the hardware serial object you want to listen on.
 Brain brain(Serial1);
 String i = "off";
-String err;
 int timeSinceLastUpdate = 0;
-//String next = "";
-//String curr = "";
-//String prev = "";
 int incrementer = 0;
 const int buttonPin = 4; // the number of the pushbutton pin
 
@@ -23,19 +19,14 @@ const int buttonPin = 4; // the number of the pushbutton pin
 int ledState = HIGH;        // the current state of the output pin
 int buttonState;            // the current reading from the input pin
 int lastButtonState = LOW;  // the previous reading from the input pin
+String err;
 
 // the following variables are unsigned longs because the time, measured in
 // milliseconds, will quickly become a bigger number than can be stored in an int.
 unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
-
 // WIFI
-/* UDP setup for NTP (world clock) */
-//unsigned int localPort = 2390;      // local port to listen for UDP packets
-//IPAddress timeServer(129, 6, 15, 28); // time.nist.gov NTP server
-//const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
-//byte packetBuffer[ NTP_PACKET_SIZE]; //buffer to hold incoming and outgoing packets
 // A UDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 WiFiSSLClient client;
@@ -43,8 +34,6 @@ boolean interruptRandomWifi = false;
 boolean testing = true;
 
 char httpGETbuf[200]; // to form HTTP GET request
-//unsigned long reqTime; // time of NTP request
-//unsigned long secsSince1900; // NTP response
 void setup() {
   // Enable internal pull-up resistor for buttonPin
   pinMode(buttonPin, INPUT_PULLUP);
@@ -81,7 +70,6 @@ void setup() {
   // uncomment to run unit tests
   // testButtonInterrupt();
 
-
 }
 
 void loop() {
@@ -94,33 +82,7 @@ void loop() {
   // testWatchDogTimer();
   // testNoData();
 
-  // uncomment to run system tests
-  while(testing){
-  
-    testSingularBrainWaveSerialInput();
-    delay(3500);
-    // Pet the watchdog
-    if (!WDT->STATUS.bit.SYNCBUSY) { 
-    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
-    }
-    
-    testSingularInterruptSerialInput();
-    delay(3500);
-    // Pet the watchdog
-    if (!WDT->STATUS.bit.SYNCBUSY) { 
-    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
-    }
-
-    testArduinoConnectionError();
-    delay(3500);
-    // Pet the watchdog
-    if (!WDT->STATUS.bit.SYNCBUSY) { 
-    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
-    }
-
-    testing = false;
-  }
-
+  runSystemTests();
 
   if (brain.update()) {
     timeSinceLastUpdate = millis();
@@ -136,12 +98,16 @@ void loop() {
   if (millis() - timeSinceLastUpdate > 5000){
     err = "err1";
     Serial.println("err1");
+    delay(50);
+    
   }
-
   // Pet the watchdog
   if (!WDT->STATUS.bit.SYNCBUSY) { 
-  WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+      WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
   }
+
+  
+  
 }
 
 void buttonInterrupt() {
@@ -179,7 +145,8 @@ void setupWiFi() {
     status = WiFi.begin(ssid); // WiFi.begin(ssid, pass) for password
     delay(5000);
   }
-  //Serial.println("Connected!");
+
+//  Serial.println("Connected!");
 
   if (connectToWebpage()) {
     Serial.println("fetched webpage");
@@ -236,4 +203,50 @@ void sendHTTPReq() {
   client.println(httpGETbuf);
   client.println("Host: www.random.org");
   client.println();
+}
+
+void runSystemTests(){
+
+    // uncomment to run system tests
+  while(testing){
+
+    Serial.println("tstart: System Testing Begins Now");
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+    
+    testSingularBrainWaveSerialInput();
+    delay(3500);
+    // // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+    
+    testSingularInterruptSerialInput();
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+    //To reset to the brainwave visualization
+    Serial.println("i: off");
+
+    testArduinoConnectionError();
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+
+    testHeadsetConnectionError();
+    delay(3500);
+    // Pet the watchdog
+    if (!WDT->STATUS.bit.SYNCBUSY) { 
+    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
+    }
+
+    testing = false;
+  }
 }

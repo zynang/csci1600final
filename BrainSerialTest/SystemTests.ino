@@ -15,7 +15,8 @@ void testArduinoConnectionError(){
   Serial.println("err1");
 }
 
-// Testing the visialization for the Arduino Connection Error
+// Testing the visualization for a singular brainwave serial input
 void testHeadsetConnectionError(){
-  Serial.println("i: on");
+  Serial.println("b: 200,44,61,626962,26235,3103,15719,23192,9544,10487,4116");
 }
+
