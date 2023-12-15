@@ -78,7 +78,6 @@ void draw() {
         //rect.draw();
         nextState = State.VISUALIZATION;
       }
-      //testingState = "";
       break;
     // 2
     case CONNECTION_ERROR:

@@ -1,4 +1,6 @@
 class Rect {
+  // Rectangle object to create the visualization
+  
   color c1, c2, c3;
   float r, g, b;
 
@@ -99,15 +101,15 @@ class Rect {
 
       if (i == 1) {
         r = map(thisPoint.value, 0, 100, 0, 255); // Attention
-        c1 = color(random(0,255), random(0,255), random(0,255), r);  //Orange
+        c1 = color(random(0,255), random(0,255), random(0,255), r);
 
       } else if (i == 2) {
         g = map(thisPoint.value, 0, 100, 0, 255); // Meditation
-        c2 = color(random(0,255), random(0,255), random(0,255), g);  // Green
+        c2 = color(random(0,255), random(0,255), random(0,255), g);
 
       } else if (i == 3) {
         b = map(thisPoint.value, 100000, 3000000, 0, 255); // Dreamless Sleep
-        c3 = color(random(0,255), random(0,255), random(0,255), b);  // Purple
+        c3 = color(random(0,255), random(0,255), random(0,255), b);
       } else {
         print("error reading from channel");
       }

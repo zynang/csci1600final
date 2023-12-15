@@ -6,22 +6,15 @@
 
 #include <Brain.h>
 #include <WiFi101.h>
-#include <WiFiUdp.h>
 
 // Set up the brain parser, pass it the hardware serial object you want to listen on.
 Brain brain(Serial1);
+
 String i = "off";
 String err;
 String signalStrengthError;
 int timeSinceLastUpdate = 0;
-int incrementer = 0;
 const int buttonPin = 4; // the number of the pushbutton pin
-
-// Variables will change: REVIEW!!!!!
-int ledState = HIGH;        // the current state of the output pin
-int buttonState;            // the current reading from the input pin
-int lastButtonState = LOW;  // the previous reading from the input pin
-String err;
 
 // the following variables are unsigned longs because the time, measured in
 // milliseconds, will quickly become a bigger number than can be stored in an int.
@@ -29,8 +22,6 @@ unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 // WIFI
-// A UDP instance to let us send and receive packets over UDP
-WiFiUDP Udp;
 WiFiSSLClient client;
 boolean interruptRandomWifi = false;
 boolean testing = true;
@@ -70,21 +61,27 @@ void setup() {
    // Enable early warning interrupts on WDT:
   WDT->INTENSET.reg = WDT_INTENSET_EW;
 
-  // uncomment to run unit tests
+  // uncomment to run unit test
   // testButtonInterrupt();
+}
 
 void loop() {
-  // Expect packets about once per second.
-  // The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
-  // "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
-  // Serial.println("test");
 
   // uncomment to run unit tests
   // testWatchDogTimer();
   // testNoData();
+  
+  // uncomment to run integration tests
+  // testSignalStrength();
 
-  runSystemTests();
+  // uncomment to run system tests
+  //runSystemTests();
 
+  /*
+   * Expect packets about once per second.
+   * The .readCSV() function returns a string (well, char*) listing the most recent brain data, in the following format:
+   * "signal strength, attention, meditation, delta, theta, low alpha, high alpha, low beta, high beta, low gamma, high gamma"
+   */ 
   if (brain.update()) {
     timeSinceLastUpdate = millis();
     String csvVals = brain.readCSV();
@@ -108,15 +105,15 @@ void loop() {
   if (!WDT->STATUS.bit.SYNCBUSY) { 
       WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
   }
-
-  // testWatchDogTimer();
-  // testNoData();
-  // testSignalStrength();
 }
 
+/*
+ * This function handles the intrrupt that will occur when the button is pressed
+ */
 void buttonInterrupt() {
     // Toggle between on and off
-    // When interrupt, turning to on, want to send HTTP request, read in the last byte which is the number then pass that and parse it
+    // When interrupt, turning to on, want to send HTTP request, 
+    // read in the last byte which is the number then pass that and parse it
     if (i == "off"){
       i = "on";
       interruptRandomWifi = true;
@@ -128,6 +125,9 @@ void buttonInterrupt() {
     Serial.println("i: " + i);
 }
 
+/*
+ * This function alerts when a watchdog reset is about to occur
+ */
 void WDT_Handler() {
   //Clear interrupt register flag
   WDT->INTFLAG.bit.EW = 1;
@@ -150,7 +150,7 @@ void setupWiFi() {
     delay(5000);
   }
 
-//  Serial.println("Connected!");
+  Serial.println("Connected!");
 
   if (connectToWebpage()) {
     Serial.println("fetched webpage");
@@ -200,18 +200,21 @@ bool readWebpage() {
   return true;
 }
 
-
+/*
+ * This function sends an HTTP Request to the specified website
+ */
 void sendHTTPReq() {
-  // LAB STEP 4e: change the second argument to be (the current time since Jan 1, 1990 in seconds) / 3
   sprintf(httpGETbuf, "GET /integers/?num=1&min=0&max=1&col=1&base=10&format=plain&rnd=id.%lu HTTP/1.1", millis());
   client.println(httpGETbuf);
   client.println("Host: www.random.org");
   client.println();
 }
 
+/*
+ * This function runs all of the system tests
+ */
 void runSystemTests(){
 
-    // uncomment to run system tests
   while(testing){
 
     Serial.println("tstart: System Testing Begins Now");
@@ -250,10 +253,12 @@ void runSystemTests(){
     if (!WDT->STATUS.bit.SYNCBUSY) { 
     WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
     }
-
+    // to signifiy the tests have ran so they don't run every loop iteration
     testing = false;
   }
+}
 
+// NOT BEING USED DO WE NEED IT?
 void checkSignalStrength(String csvData) {
     int csv = csvData.indexOf(',');
     
