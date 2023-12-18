@@ -30,16 +30,17 @@ void setup() {
   // Set up window
   size(1440,960);
   setupHelper();
-  // Comment in for Zyn
-  //serial = new Serial(this, "COM6", 9600);    
-  //serial.bufferUntil(10);
   
   // Comment in to find your port #
   //for (int i = 0; i < Serial.list().length; i++) {
   //  println("[" + i + "] " + Serial.list()[i]);
   //}
   
-  // 5 on Joe's computer, 3 on Lynda/Haley's
+  // Comment in for Non-Mac
+  //serial = new Serial(this, "COM6", 9600);    
+  //serial.bufferUntil(10);
+  
+  // Comment in for Mac
   //serial = new Serial(this, Serial.list()[3], 9600);
   
   serial = new Serial(this, Serial.list()[3], 9600);
@@ -56,17 +57,8 @@ void draw() {
     // STATE 1
     case ARDUINO_ERROR:
       // 1-1 Circuit is down or Headset is off (receiving err1)
-      if (!headsetOn) { // TODO: or circuit is down? maybe not
-        if(!testingState.equals("")){
-           println("TRYING TO VISUALIZE TEST: " + testingState);
-           estimateColor();
-           textSize(70);
-           text(testingState, 220, 400);
-           testingState = ""; // THIS LINE IS PREVENTING THE WORDS BEING BEING DISPLAYED IN THE VISUALIZATION
-        }
-        else{
-          drawHeadsetError();
-        }
+      if (!headsetOn) {
+        drawHeadsetError();
         nextState = State.ARDUINO_ERROR;
       }
       // 1-2 Headset is connected but is getting bad values (200 for first, 0 for second and 0 for third)
@@ -239,18 +231,14 @@ void readSerial(Serial p) {
            growing = true;
          }
        }
-       // Interrupt triggered
-       else if (typeOfInput[0].equals("tstart:")){
-         testingState = trimmed.substring(8);
-       }
        else{
          println("Uncaught exception " + incomingString);
        }
    }
  }
 }
-// Utilities
 
+// Utilities
 void estimateColor(){
   if (currR > red(nextColor)){
       currR-=1;

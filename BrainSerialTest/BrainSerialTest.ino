@@ -38,8 +38,6 @@ void setup() {
   Serial1.begin(9600);
   Serial.begin(9600);
 
-  // while(!Serial); // remove when running with headset
-
   setupWiFi();
   // Clear and enable WDT
   NVIC_DisableIRQ(WDT_IRQn);
@@ -68,14 +66,14 @@ void setup() {
 void loop() {
 
   // uncomment to run unit tests
-  // testWatchDogTimer();
-  // testNoData();
+  //testWatchDogTimer();
+  //testNoData();
   
-  // uncomment to run integration tests
+  // uncomment to run integration test
   // testSignalStrength();
 
   // uncomment to run system tests
-  //runSystemTests();
+  // runSystemTests();
 
   /*
    * Expect packets about once per second.
@@ -84,8 +82,12 @@ void loop() {
    */ 
   if (brain.update()) {
     timeSinceLastUpdate = millis();
+
     String csvVals = brain.readCSV();
+
+    // uncomment to run integration tests
     // checkSignalStrength(csvVals);
+
     if (interruptRandomWifi == true){
       if (readWebpage()) {
         sendHTTPReq();
@@ -217,13 +219,6 @@ void runSystemTests(){
 
   while(testing){
 
-    Serial.println("tstart: System Testing Begins Now");
-    delay(3500);
-    // Pet the watchdog
-    if (!WDT->STATUS.bit.SYNCBUSY) { 
-    WDT->CLEAR.reg = WDT_CLEAR_CLEAR(0xA5); 
-    }
-    
     testSingularBrainWaveSerialInput();
     delay(3500);
     // // Pet the watchdog
@@ -256,21 +251,4 @@ void runSystemTests(){
     // to signifiy the tests have ran so they don't run every loop iteration
     testing = false;
   }
-}
-
-// NOT BEING USED DO WE NEED IT?
-void checkSignalStrength(String csvData) {
-    int csv = csvData.indexOf(',');
-    
-    if (csv != -1) {
-        String signalStrengthStr = csvData.substring(0, csv);
-
-        int signalStrength = signalStrengthStr.toInt();
-
-        if (signalStrength != 0) { 
-              // when headset is on but no human interation detected
-              signalStrengthError = "Headset is on but no connection detected!";
-              Serial.println(signalStrengthError);
-        }
-    }
 }

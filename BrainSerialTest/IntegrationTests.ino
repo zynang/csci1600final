@@ -12,3 +12,18 @@ void testSignalStrength(){
    Serial.println("TEST 3 :: failed");
  }
 }
+
+void checkSignalStrength(String csvData) {
+    int csv = csvData.indexOf(',');
+    
+    if (csv != -1) {
+        String signalStrengthStr = csvData.substring(0, csv);
+
+        int signalStrength = signalStrengthStr.toInt();
+
+        if (signalStrength != 0) { 
+              // when headset is on but no human interation detected
+              signalStrengthError = "Headset is on but no connection detected!";
+        }
+    }
+}
